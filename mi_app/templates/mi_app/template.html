@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tabla de Items</title>
+    <!-- Incluir las bibliotecas de FontAwesome desde el CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Incluir las bibliotecas de Bootstrap desde el CDN -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Incluir las bibliotecas de DataTables -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <!-- Incluir la extensión DataTables Buttons desde el CDN -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+</head>
+<body>
+    <h1>Tabla de Items</h1>
+
+    {% if messages %}
+    <div class="alert alert-danger">
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'agregar_item' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Agregar Elemento</button>
+    </form>
+    <table id="tabla-items"  class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.nombre }}</td>
+                <td>{{ item.estado }}</td>
+                <td>
+                    <div class="btn-group" role="group" aria-label="Acciones">
+                    {% if item.estado != 'Eliminado' %}
+                        <form method="post" action="{% url 'eliminar_item' item.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="estado" value="Eliminado">
+                            <button type="submit" class="btn btn-warning btn-sm mr-1">
+                                <i class="fas fa-trash-alt"></i> <!-- Icono de Eliminar -->
+                            </button>
+                        </form>
+                        {% if item.estado == 'Activado' %}
+                        <form method="post" action="{% url 'cambiar_estado' item.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="estado" value="Desactivado">
+                            <button type="submit" class="btn btn-danger btn-sm mr-1">
+                                <i class="fas fa-toggle-off"></i> <!-- Icono de Desactivar -->
+                            </button>
+                        </form>
+                        {% else %}
+                        <form method="post" action="{% url 'cambiar_estado' item.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="estado" value="Activado">
+                            <button type="submit" class="btn btn-success btn-sm mr-1">
+                                <i class="fas fa-toggle-on"></i> <!-- Icono de Activar -->
+                            </button>
+                        </form>
+                        {% endif %}
+                        <a href="{% url 'editar_item' item.id %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit"></i> <!-- Icono de Editar -->
+                        </a>
+                    {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+
+    <script>
+        // Inicializar DataTable
+        $(document).ready(function() {
+            var table = $('#tabla-items').DataTable({
+                dom: 'Bfrtip',
+                buttons: [
+                    'csv', 'excel', 'pdf'
+                ]
+            });
+        });
+    </script>
+</body>
+</html>
